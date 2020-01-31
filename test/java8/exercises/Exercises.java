@@ -9,9 +9,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
@@ -21,8 +25,10 @@ public class Exercises {
 // a static List<String> defined at the bottom of this file.
 
     @Test
-    @Disabled
+//    @Disabled
     public void printAllWords() {
+        wordList.stream()
+                .forEach(System.out::println);
         /* TODO */
         // no assertions
     }
@@ -30,9 +36,13 @@ public class Exercises {
 // Exercise 2: Convert all words in wordList to upper case,
 // and gather the result into an output list.
 
-    @Test @Disabled
+    @Test
+//    @Disabled
     public void upperCaseWords() {
-        List<String> output = null; /* TODO */
+//        List<String> output = null; /* TODO */
+        List<String> output = wordList.stream()
+                                .map(String::toUpperCase)
+                                .collect(toList());
 
         assertEquals(
                 Arrays.asList(
@@ -45,9 +55,13 @@ public class Exercises {
 // Exercise 3: Find all the words in wordList that have even length
 // and put them into an output list.
 
-    @Test @Disabled
+    @Test
+//    @Disabled
     public void findEvenLengthWords() {
-        List<String> output = null; /* TODO */
+//        List<String> output = null; /* TODO */
+        List<String> output = wordList.stream()
+                    .filter(s -> s.length() % 2 == 0)
+                    .collect(toList());
 
         assertEquals(
                 Arrays.asList(
@@ -61,19 +75,26 @@ public class Exercises {
 // The text file is "SonnetI.txt" (Shakespeare's first sonnet) which is
 // located at the root of this NetBeans project.
 
-    @Test @Disabled
+    @Test
+//    @Disabled
     public void countLinesInFile() throws IOException {
-        long count = 0L; /* TODO */
+//        long count = 0L; /* TODO */
+        long count = reader.lines().count();
 
         assertEquals(14, count);
     }
 
 // Exercise 5: Join lines 3-4 from the text file into a single string.
 
-    @Test @Disabled
+    @Test
+//    @Disabled
     public void joinLineRange() throws IOException {
-        String output = null; /* TODO */
-
+//        String output = null; /* TODO */
+        String output = reader.lines()
+                .skip(2)
+                .limit(2)
+                .reduce((s1,s2) -> s1 + s2)
+                .get();
         assertEquals(
                 "But as the riper should by time decease," +
                         "His tender heir might bear his memory:",
@@ -82,9 +103,14 @@ public class Exercises {
 
 // Exercise 6: Find the length of the longest line in the file.
 
-    @Test @Disabled
+    @Test
+//    @Disabled
     public void lengthOfLongestLine() throws IOException {
-        int longest = 0; /* TODO */
+//        int longest = 0; /* TODO */
+        int longest = reader.lines()
+                .mapToInt(p -> p.split("").length)
+                .max()
+                .getAsInt();
 
         assertEquals(longest, 53);
     }
@@ -94,9 +120,15 @@ public class Exercises {
 // Splitting this way results in "words" that are the empty string,
 // which should be discarded. REGEXP is defined at the bottom of this file.
 
-    @Test @Disabled
+    @Test
+//    @Disabled
     public void listOfAllWords() throws IOException {
-        List<String> output = null; /* TODO */
+//        List<String> output = null; /* TODO */
+        List<String> output = reader.lines()
+//                .map(s -> s.split(REGEXP))
+                .flatMap(s -> Arrays.asList(s.split(REGEXP)).stream())
+                .filter(s -> !s.equals(""))
+                .collect(toList());
 
         assertEquals(
                 Arrays.asList(
@@ -120,9 +152,16 @@ public class Exercises {
 
 // Exercise 8: Create a list containing the words, lowercased, in alphabetical order.
 
-    @Test @Disabled
+    @Test
+//    @Disabled
     public void sortedLowerCase() throws IOException {
-        List<String> output = null; /* TODO */
+//        List<String> output = null; /* TODO */
+        List<String> output = reader.lines()
+                .flatMap(s -> Arrays.asList(s.split(REGEXP)).stream())
+                .map(String::toLowerCase)
+                .filter(s -> !s.equals(""))
+                .sorted()
+                .collect(toList());
 
         assertEquals(
                 Arrays.asList(
@@ -148,9 +187,18 @@ public class Exercises {
 // Exercise 9: Sort unique, lower-cased words by length, then alphabetically
 // within length, and place the result into an output list.
 
-    @Test @Disabled
+    @Test
+//    @Disabled
     public void sortedLowerCaseDistinctByLengthThenAlphabetically() throws IOException {
-        List<String> output = null; /* TODO */
+//        List<String> output = null; /* TODO */
+        List<String> output = reader.lines()
+                .flatMap(s -> Arrays.asList(s.split(REGEXP)).stream())
+                .map(String::toLowerCase)
+                .filter(s -> !s.equals(""))
+                .distinct()
+                .sorted()
+                .sorted(Comparator.comparingInt(String::length))
+                .collect(toList());
 
         assertEquals(
                 Arrays.asList(
@@ -177,7 +225,11 @@ public class Exercises {
 
     @Test @Disabled
     public void mapLengthToWordList() throws IOException {
-        Map<Integer, List<String>> map = null; /* TODO */
+//        Map<Integer, List<String>> map = null; /* TODO */
+        Map<Integer, List<String>> map = reader.lines()
+                .flatMap(s -> Arrays.stream(s.split(REGEXP)))
+                .filter(s -> !s.equals(""))
+                .collect(Collectors.groupingBy(String::length));
 
         assertEquals(6, map.get(7).size());
         assertEquals(Arrays.asList("increase", "ornament"), map.get(8));
@@ -195,6 +247,12 @@ public class Exercises {
     @Test @Disabled
     public void wordFrequencies() throws IOException {
         Map<String, Long> map = null; /* TODO */
+//        Map<String, Long> map = reader.lines()
+//                .flatMap(s -> Arrays.stream(s.split(REGEXP)))
+//                .filter(s -> !s.equals(""));
+//                .collect(Collectors.groupingBy(s -> s, s->s.length()));
+//                .collect(Collectors.groupingBy(s ->s))
+
 
         assertEquals(2L, (long)map.get("tender"));
         assertEquals(6L, (long)map.get("the"));
@@ -216,6 +274,7 @@ public class Exercises {
 
     @Test @Disabled
     public void nestedMaps() throws IOException {
+//        Map<String, Map<Integer, List<String>>> map = null; /* TODO */
         Map<String, Map<Integer, List<String>>> map = null; /* TODO */
 
         assertEquals("[From, Feed]", map.get("F").get(4).toString());
